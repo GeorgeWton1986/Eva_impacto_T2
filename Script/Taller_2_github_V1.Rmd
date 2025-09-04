@@ -71,10 +71,10 @@ c) ¿Cuáles son los supuestos necesarios para que VI nos permita recuperar el e
 ### Generalidades de R
 ```{r}
 #Limpiar la consola
-#cat("\f")
+cat("\f")
 
 #Limpiar el Global Environment
-#rm(list = ls())
+rm(list = ls())
 
 #Incluir las librerias
 if(!require(pacman)) install.packages("pacman") ; require(pacman)
@@ -90,10 +90,9 @@ p_load(haven,   #Leer archivos .dta
 ### Transformación de datos en R
 ```{r}
 # Definir URL del repositorio
-github_url <- "https://raw.githubusercontent.com/GeorgeWton1986/Eva_Impacto_Meca/main"
-
+github_url <- "https://raw.githubusercontent.com/GeorgeWton1986/Eva_impacto_T2/main"
 # Cargar datos
-corruption_data <- read_dta(paste0(github_url, "/Data/corruption_SV_github.dta"))
+BD_0 <- read_dta(paste0(github_url, "/Data/oil_windfall_sin10perc.dta"))
 
 # Ver estructura de los datos
 #glimpse(corruption_data)
