@@ -1,0 +1,265 @@
+---
+title: "EVALUACIÓN DE IMPACTO - TALLER 2"
+author: "VIÁFARA MORALES, JORGE ELIECER"
+date: "2025-09-06"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+## Introduccion
+En su artículo “Do Oil Windfalls Improve Living Standards? Evidence from Brazil” , Caselli y Michaels (2013) investigan el comportamiento de los gobiernos locales de Brasil cuando hay choques positivos de recursos. En particular, se preguntan si (1) choques positivos de petróleo resultan en un mayor gasto del gobierno y (2) si ese mayor gasto resulta en mejoras efectivas del bienestar de los lugares beneficiados del país. Para responder sus preguntas, los autores usan la metodología de Variables Instrumentales. En este taller, ustedes realizarán algunas de las estimaciones hechas por los autores e interpretarán los resultados. Para esto, ustedes deben usar una submuestra aleatoria de la base de datos oil_windfall.dta, la cual fue usada por los autores.  Así, justo después de abrir la base de datos – i.e., la base completa, deben eliminar aleatoriamente el 10% de las observaciones y usar la base restante.  La semilla que deben usar para que sus resultados sean replicables es su código de estudiante. 
+
+Se recomienda tener respuestas tan breves como sea posible. Ciertas preguntas, sobre todo aquellas que preguntan por su opinión, pueden no tener una única respuesta correcta. Así, lo importante es que argumenten de manera coherente.  
+
+
+
+## Primer Punto
+Escriban la especificación principal de los autores (en niveles) y describan cada una de sus variables explicativas.
+
+### Solución Primer Punto
+De acuerdo con el enunciado la especificación principal del autor puede escribirse de la siguiente manera:
+
+\begin{align}
+W_{m} = \delta_1 &+ \theta_1 r_{m} + \X'_{m}\rho_1+ u_{m1} \quad \nonumber \\
+\end{align}
+
+Nota: la nomenclatura utilizada en la ecución (1) sigue la convención de subíndices para indicar el nivel de agregación de las variables.
+
+A continuaciòn, se definen los terminos de la ecuación (1):
+
+-   **$W_{m}$:** Representa una variable de resultado de la $AMC_m$. Esto incluye una variedad de indicadores como el gasto reportado en diversas partidas del presupuesto municipal, la provisión real de bienes y servicios públicos, las transferencias sociales, el ingreso de los hogares y las tasas de pobreza, entre otros.
+
+-  **$r_{m}$:** Es una medida a nivel de la  $AMC_m$ de los ingresos municipales per cápita.
+
+-  **$X'_{m}$:** Es un vector de controles geográficos a nivel de la $AMC_m$. Estos controles incluyen la latitud, la longitud, un indicador de si la AMC está en la costa, las distancias a las capitales federal y estatal, un dummy de capital estatal y efectos fijos de estado. La inclusión de estos controles geográficos es crucial porque las AMCs ricas en petróleo y las pobres en petróleo pueden diferir en características geográficas sistemáticas. El objetivo es asegurar que la abundancia de petróleo sea tan buena como asignada aleatoriamente, condicional a estas covariables geográficas.
+
+  - **$ubicacion$:** Coordenadas geográficas que ayudan a controlar por diferencias regionales.
+  - **$ind_costa$:** Un indicador que toma el valor de uno si la AMC está ubicada en la costa.
+  - **$dist_cap$:** Distancia a la capital federal y estatal
+  - **cap_estatal:** Un dummy que indica si la AMC es una capital estatal.
+
+-  **$\delta_1, \theta_1, rho_1 $:** Son los coeficientes a estimar.
+
+-  **u_{m1}** Es el término de error.
+
+- **$grade_{gmt}$:** Esta es una variable que representa el grado de los estudiantes (g) en el municipio (m) en el año (t). El nivel de agregación es grado, municipio y año.
+
+Manual avanzado de R markdown: https://rpubs.com/ricardo/14631 
+
+## Segundo Punto
+
+2.	¿Cuál es la intuición detrás de implementar Variables Instrumentales (VI) en vez de Mínimos Cuadrados Ordinarios (MCO)? En este escenario: Mencione al menos un sesgo del cual podríamos estar preocupados si interpretamos los efectos por MCO de manera causal. ¿Cuáles son los supuestos necesarios para que VI nos permita recuperar el efecto causal de interés? ¿Son creíbles los supuestos? Argumenten.
+
+### Solución Segundo Punto
+
+a) ¿Cuál es la intuición detrás de implementar Variables Instrumentales (VI) en vez de Mínimos Cuadrados Ordinarios (MCO)?
+
+**Respuesta:**El método de la variable instrumental (VI) permite estimar el impacto de una variable o el efecto causal sobre el resultado estudiado. En aucencia de un experimiento aleatorio, se puede correr el riesgo de endogeneidad lo que causaria en los estimadores por MCO incosistencias y sesgos. En consecuencia, la implementacion del método de VI deberá encontrar una variables adicional que logre explicar el resultado a través de la variable explicativa de interés que en este caso será $r_{m}$.
+
+b)Mencione al menos un sesgo del cual podríamos estar preocupados si interpretamos los efectos por MCO de manera causal.
+
+**Respuesta:**
+Los ingresos municipales en general pueden tener diferentes fuentes de recursos, como por ejemplo, impuestos locales, servicios públicos, transferencias desde los gobiernos estatales y municipales, entre otros. Además, los ingresos podrán depender de diferentes caracteristicas locales, tales como, probreza monetaria, multidimencional, demografía, infraestructura, ect. Por lo tanto, es necesario estudiar las variables observadas que permitan establecer el efecto causal de $r_{m}$ sobre $W_{m}$. En este sentido, es necesario considerar un sesgo por variable omitida, dado que existen variables no observadas que influyen en los indicadores de $W_{m}$.
+
+
+c) ¿Cuáles son los supuestos necesarios para que VI nos permita recuperar el efecto causal de interés? ¿Son creíbles los supuestos?
+
+**Respuesta:** Los supuesto necesarios para que un Instrumento tenga valides son: Relevancia, Exclusión e Independicia. Para el articulo que estamos analizando, se plantea el supuesto de relevancia desde el Instrumento $Q_{m}$, que esta en la capacidad de predecir $r_{m}$. De otro lado, el supuesto de exclusión plantea que el instrumento $Q_{m}$ no debe tener un efecto directo sobre $W_{m}$, es decir, el instrumento solo afecta a la variable explicativa de interés $r_{m}$. Finalmente, el supuesto de independencia plantea que el instrumento $Q_{m}$ debe ser independiente del término de error en la ecuación estructural. En este sentido, se puede considerar que los supuestos planteados para el instrumento $Q_{m}$ tales como, la operación de petrobras, ubicación de la plataformas petroleras, entre otros son aleatorios. Además, la actividad petrolera en Brasil tiene poco efecto en las actividades no petroleras (Los efectos de derrame - Spillover) permiten establacer que los supuesto del instrumento son creíbles.
+
+### Generalidades de R
+```{r}
+#Limpiar la consola
+#cat("\f")
+
+#Limpiar el Global Environment
+#rm(list = ls())
+
+#Incluir las librerias
+if(!require(pacman)) install.packages("pacman") ; require(pacman)
+p_load(haven,   #Leer archivos .dta
+        dplyr,   #Manipular datos
+        stargazer,  #Visualizar tablas de regresión
+        fixest,  #Calcular los efectos fijos
+        plm,  #Datos de panel
+       knitr   #Visualizar tablas adicionales
+      )
+```
+
+### Transformación de datos en R
+```{r}
+# Definir URL del repositorio
+github_url <- "https://raw.githubusercontent.com/GeorgeWton1986/Eva_Impacto_Meca/main"
+
+# Cargar datos
+corruption_data <- read_dta(paste0(github_url, "/Data/corruption_SV_github.dta"))
+
+# Ver estructura de los datos
+#glimpse(corruption_data)
+#head(corruption_data)
+
+#Seleccion de columnas
+corruption_1 <- corruption_data %>%
+  select(prop, Corrupt, Auditada, clavedelaescuela, year, 
+         GradoSecundaria, PartidoDesf, AlreadyAudited, 
+         CorruptPast, HOMI_CAP_MUN, total, MismoPartidoG)
+
+#Transformar la variable total a logritmo natural
+corruption_1$log_total <- log(corruption_1$total + 1)
+
+#Limpiar la base de datos corruption_1 y obtener la base de datos corruption_clean
+corruption_clean <- corruption_1 %>%
+  filter(!is.na(prop), !is.na(Corrupt), !is.na(Auditada))
+
+# Verificar datos limpios
+cat("Observaciones después de limpiar NA's:", nrow(corruption_clean))
+
+#Verificacion de variables
+summary(corruption_clean)
+head(corruption_clean)
+
+```
+## Tercer Punto
+
+En una tabla, presenten los resultados de estimar la primera etapa de la metodología de Variables Instrumentales.  ¿Es el instrumento relevante y fuerte? Contesten esta pregunta usando los dos criterios recomendados en la clase magistral. 
+
+### Solución Punto a)
+
+**Respuesta:**
+La ecuación de la primera etapa se expresa el término $r_{m}$ como funcion de $Q_{m}$ y $X'_{m}$, es decir:
+
+\begin{equation}
+r_{m} = \alpha + \beta_1 Corrupt_{mt} + u_{cgmt} \quad
+\end{equation}
+
+```{r}
+#Regresion del modelo simple.
+
+modelo_a <- lm(prop ~ Corrupt, 
+               data = corruption_clean)
+
+```
+### Solución Punto b)
+
+Una regresión simple de la variable dependiente contra la independiente principal + Controles. Por lo tanto, el modelo_b se especifica de la siguiente forma:
+
+
+\begin{align}
+prop_{cgmt} = \alpha &+ \beta_1 Corrupt_{mt} + \beta_2 Auditada_{mt} + grade_{gmt} \nonumber \\
+&+ PartidoDesf_{mt} + AlreadyAudited_{mt} + CorruptPast_{mt} \nonumber \\
+&+ HOMICAPMUN_{mt} + MismoPartidoG_{mt} + \log(total)_{mt} + u_{cgmt} \quad
+\end{align}
+
+```{r}
+#Regresion del modelo simple de la variable dependiente contra 
+#la independiente principal + Controles.
+
+modelo_b <- lm(prop ~ Corrupt + Auditada + GradoSecundaria + PartidoDesf 
+               + AlreadyAudited + CorruptPast + HOMI_CAP_MUN + log_total + MismoPartidoG, 
+               data = corruption_clean)
+
+```
+
+### Solución Punto c)
+
+Una regresión simple de la variable dependiente contra la independiente principal + Efectos fijos.
+
+\begin{align}
+prop_{cgmt} = \alpha &+ \beta_1 Corrupt_{mt} + \beta_2 Auditada_{mt} + Clavedelaescuela_{c} \nonumber \\
+&+ year_{t} + u_{cgmt} \quad
+\end{align}
+
+```{r}
+#Convertir corruption_clean a un data frame de panel
+corruption_panel <- pdata.frame(corruption_clean, index = c("clavedelaescuela", "year"))
+
+#Una regresión simple de la variable dependiente contra 
+#la independiente principal + Efectos fijos.
+
+modelo_c <- plm(prop ~ Corrupt + Auditada, data = corruption_panel, 
+                model = "within", 
+                effect = "twoways")
+
+```
+
+### Solución Punto d)
+
+Una regresión simple de la variable dependiente contra la independiente principal + Controles + Efectos fijos.
+
+```{r}
+
+#Una regresión simple de la variable dependiente 
+#contra la independiente principal + Controles + Efectos fijos.
+
+modelo_d <- plm(prop ~ Corrupt + Auditada + GradoSecundaria + PartidoDesf 
+                + AlreadyAudited + CorruptPast + HOMI_CAP_MUN + log_total + MismoPartidoG, 
+                data = corruption_panel, 
+                model = "within", 
+                effect = "twoways")
+
+```
+
+### Tabla Resumen de Resultados
+```{r results='asis'}
+#Tabla de resumen de resultados
+
+stargazer(modelo_a, modelo_b, modelo_c, modelo_d,
+          type = "latex",
+          title = "Efecto de la Corrupción sobre la Proporción de Trampa Estudiantil",
+          column.labels = c("(1) Simple", "(2) Controles", "(3) EF", "(4) Completo"),
+          omit = c("Auditada", "GradoSecundaria", "PartidoDesf", 
+                   "AlreadyAudited", "CorruptPast", "HOMI_CAP_MUN", 
+                   "log_total", "MismoPartidoG", "Constant"),
+          covariate.labels = c("Corrupción"),
+          dep.var.labels = "Proporción de Trampa",
+          add.lines = list(
+            c("Controles", "No", "Sí", "No", "Sí"),
+            c("EF Colegio", "No", "No", "Sí", "Sí"),
+            c("EF Año", "No", "No", "Sí", "Sí")
+          ),
+          notes = c("Errores estándar en paréntesis.",
+                   "*** p<0.01, ** p<0.05, * p<0.1"),
+          notes.append = FALSE,
+          font.size = "scriptsize",  # Fuente más pequeña
+          column.sep.width = "1pt",  # Separación mínima
+          no.space = TRUE,
+          header = FALSE,
+          table.placement = "htbp",  # Cambiar de "H" a "htbp"
+          float = TRUE,
+          float.env = "table")
+
+```
+
+### Solución Tercer Punto
+
+
+**Respuesta:**
+
+- **Modelo_a (Simple):** 
+
+- **Modelo_b (Controles):**
+
+- **Modelo_c (Efectos Fijos):** 
+
+- **Modelo_d (Controles + Efectos Fijos):** 
+
+## Cuarto Punto
+4.	En una tabla, presenten e interpreten los resultados de estimar por VI el efecto de (mayores) ingresos públicos (producto del petróleo) sobre el gasto público reportado en el año 2000 en Educación y Cultura, Salud y Sanitización, Transporte y Transferencias Sociales. 
+
+a)¿Cuál es el supuesto de identificación para que esta especificación les permita hacer interpretaciones causales?
+
+### Solución Cuarto Punto
+
+
+**Respuesta:**
+
+
+
+## Quinto Punto
+En una tabla, presenten e interpreten los resultados de estimar por VI el efecto de (mayores) ingresos públicos (producto del petróleo) sobre las variables efectivas de bienestar. En particular, sobre proporción de personas que no viven en favelas en 2000 y  el número de salones por millón de habitantes en el 2005. ¿Qué indican sus resultados? ¿Mayores ingresos públicos resultan en niveles del bienestar medido a través de estas variables?. En texto describa los resultados para la primera variable
+
+### Solución Quinto Punto
+
+
+**Respuesta:**
