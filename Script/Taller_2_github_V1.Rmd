@@ -115,7 +115,7 @@ print(paste("Observaciones después del filtro:", nrow(BD_filtrada)))
 
 ## Tercer Punto
 
-En una tabla, presenten los resultados de estimar la primera etapa de la metodología de Variables Instrumentales.  ¿Es el instrumento relevante y fuerte? Contesten esta pregunta usando los dos criterios recomendados en la clase magistral. 
+En una tabla, presenten los resultados de estimar la primera etapa de la metodología de Variables Instrumentales. ¿Es el instrumento relevante y fuerte? Contesten esta pregunta usando los dos criterios recomendados en la clase magistral. 
 
 ### Especificación VI
 
