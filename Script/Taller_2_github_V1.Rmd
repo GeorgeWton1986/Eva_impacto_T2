@@ -31,14 +31,15 @@ A continuaciòn, se definen los terminos de la ecuación (1):
 
 -   **$W_{m}$:** Representa una variable de resultado de la $AMC_m$. Esto incluye una variedad de indicadores como el gasto reportado en diversas partidas del presupuesto municipal, la provisión real de bienes y servicios públicos, las transferencias sociales, el ingreso de los hogares y las tasas de pobreza, entre otros.
 
--  **$r_{m}$:** Es una medida a nivel de la  $AMC_m$ de los ingresos municipales per cápita.
+-  **$r_{m} (mun_budget_revenue2000_pred_c)$:** Es una medida a nivel de la  $AMC_m$ de los ingresos municipales per cápita.
 
 -  **$X'_{m}$:** Es un vector de controles geográficos a nivel de la $AMC_m$. Estos controles incluyen la latitud, la longitud, un indicador de si la AMC está en la costa, las distancias a las capitales federal y estatal, un dummy de capital estatal y efectos fijos de estado. La inclusión de estos controles geográficos es crucial porque las AMCs ricas en petróleo y las pobres en petróleo pueden diferir en características geográficas sistemáticas. El objetivo es asegurar que la abundancia de petróleo sea tan buena como asignada aleatoriamente, condicional a estas covariables geográficas.
 
-  - **$ubicacion$:** Coordenadas geográficas que ayudan a controlar por diferencias regionales.
-  - **$ind_costa$:** Un indicador que toma el valor de uno si la AMC está ubicada en la costa.
-  - **$dist_cap$:** Distancia a la capital federal y estatal
-  - **cap_estatal:** Un dummy que indica si la AMC es una capital estatal.
+  - **$latitude1998$:** Coordenadas geográficas que ayudan a controlar por diferencias regionales.
+  - **$longitude1998$:** Coordenadas geográficas que ayudan a controlar por diferencias regionales.
+  - **$dist_federal_capital1998$:** Distancia a la capital federal.
+  - **$dist_state_capital1998$:** Distancia a la capital estatal.
+  - **state_capital**: Un dummy que indica si la AMC es una capital estatal.
 
 -  **$\delta_1, \theta_1, rho_1 $:** Son los coeficientes a estimar.
 
@@ -83,7 +84,8 @@ p_load(haven,   #Leer archivos .dta
         stargazer,  #Visualizar tablas de regresión
         fixest,  #Calcular los efectos fijos
         plm,  #Datos de panel
-       knitr   #Visualizar tablas adicionales
+       knitr,   #Visualizar tablas adicionales
+       ivreg  #Regresiones por variables instrumentales
       )
 ```
 
@@ -95,153 +97,72 @@ github_url <- "https://raw.githubusercontent.com/GeorgeWton1986/Eva_impacto_T2/m
 BD_0 <- read_dta(paste0(github_url, "/Data/oil_windfall_sin10perc.dta"))
 
 # Ver estructura de los datos
-#glimpse(corruption_data)
-#head(corruption_data)
+glimpse(BD_0)
+head(BD_0)
 
-#Seleccion de columnas
-corruption_1 <- corruption_data %>%
-  select(prop, Corrupt, Auditada, clavedelaescuela, year, 
-         GradoSecundaria, PartidoDesf, AlreadyAudited, 
-         CorruptPast, HOMI_CAP_MUN, total, MismoPartidoG)
+# Verificar los nombres de la columnas
+colnames(BD_0)
+```
+### Filtrar datos offshore
+```{r}
+# Filtrar para municipios costeros sin petróleo onshore
 
-#Transformar la variable total a logritmo natural
-corruption_1$log_total <- log(corruption_1$total + 1)
+#5. Para este taller, corran la regresión únicamente para municipios costeros (coastal = 1) y que reciben petróleo únicamente del mar (onshore = 0).
 
-#Limpiar la base de datos corruption_1 y obtener la base de datos corruption_clean
-corruption_clean <- corruption_1 %>%
-  filter(!is.na(prop), !is.na(Corrupt), !is.na(Auditada))
+BD_filtrada <- BD_0 %>%
+  filter(coastal == 1,
+         onshore == 0)
 
-# Verificar datos limpios
-cat("Observaciones después de limpiar NA's:", nrow(corruption_clean))
-
-#Verificacion de variables
-summary(corruption_clean)
-head(corruption_clean)
+print(paste("Observaciones después del filtro:", nrow(BD_filtrada)))
 
 ```
+
 ## Tercer Punto
 
 En una tabla, presenten los resultados de estimar la primera etapa de la metodología de Variables Instrumentales.  ¿Es el instrumento relevante y fuerte? Contesten esta pregunta usando los dos criterios recomendados en la clase magistral. 
 
-### Solución Punto a)
+### Especificación VI
 
 **Respuesta:**
 La ecuación de la primera etapa se expresa el término $r_{m}$ como funcion de $Q_{m}$ y $X'_{m}$, es decir:
 
 \begin{equation}
-r_{m} = \alpha + \beta_1 Corrupt_{mt} + u_{cgmt} \quad
+y_{m,2000} = δ_3 + η_3Q_{m,2000} + X´_m ρ_3 + w_{m3} \quad
 \end{equation}
+
+
 
 ```{r}
 #Regresion del modelo simple.
 
-modelo_a <- lm(prop ~ Corrupt, 
-               data = corruption_clean)
+etapa_1 <- lm(mun_budget_revenue2000_pred_c ~ oilandgasvalue2000_cap + 
+                latitude1998 + longitude1998 + dist_federal_capital1998 + 
+                 dist_state_capital1998 + state_capital, 
+               data = BD_filtrada)
 
-```
-### Solución Punto b)
+# Resultados primera etapa
+summary(etapa_1)
 
-Una regresión simple de la variable dependiente contra la independiente principal + Controles. Por lo tanto, el modelo_b se especifica de la siguiente forma:
+# Estadísticos de relevancia
+coef_oil <- summary(etapa_1)$coefficients["oilandgasvalue2000_cap", ]
+t_stat <- coef_oil["t value"]
+f_stat <- summary(etapa_1)$fstatistic[1]
 
+# Crear tabla para primera etapa
+stargazer(etapa_1, type = "text", 
+          title = "Primera Etapa: Ingresos Municipales",
+          omit = c("latitude1998", "longitude1998", "dist_federal_capital1998", 
+          "dist_state_capital1998", "state_capital", "Constant"),
+          dep.var.labels = "Ingresos Municipales per cápita 2000")
 
-\begin{align}
-prop_{cgmt} = \alpha &+ \beta_1 Corrupt_{mt} + \beta_2 Auditada_{mt} + grade_{gmt} \nonumber \\
-&+ PartidoDesf_{mt} + AlreadyAudited_{mt} + CorruptPast_{mt} \nonumber \\
-&+ HOMICAPMUN_{mt} + MismoPartidoG_{mt} + \log(total)_{mt} + u_{cgmt} \quad
-\end{align}
-
-```{r}
-#Regresion del modelo simple de la variable dependiente contra 
-#la independiente principal + Controles.
-
-modelo_b <- lm(prop ~ Corrupt + Auditada + GradoSecundaria + PartidoDesf 
-               + AlreadyAudited + CorruptPast + HOMI_CAP_MUN + log_total + MismoPartidoG, 
-               data = corruption_clean)
-
-```
-
-### Solución Punto c)
-
-Una regresión simple de la variable dependiente contra la independiente principal + Efectos fijos.
-
-\begin{align}
-prop_{cgmt} = \alpha &+ \beta_1 Corrupt_{mt} + \beta_2 Auditada_{mt} + Clavedelaescuela_{c} \nonumber \\
-&+ year_{t} + u_{cgmt} \quad
-\end{align}
-
-```{r}
-#Convertir corruption_clean a un data frame de panel
-corruption_panel <- pdata.frame(corruption_clean, index = c("clavedelaescuela", "year"))
-
-#Una regresión simple de la variable dependiente contra 
-#la independiente principal + Efectos fijos.
-
-modelo_c <- plm(prop ~ Corrupt + Auditada, data = corruption_panel, 
-                model = "within", 
-                effect = "twoways")
+print(paste("t-estadístico:", round(t_stat, 3)))
+print(paste("F-estadístico:", round(f_stat, 3)))
+print(paste("¿Instrumento relevante? (t > 1.96):", abs(t_stat) > 1.96))
+print(paste("¿Instrumento fuerte? (F > 10):", f_stat > 10))
 
 ```
 
-### Solución Punto d)
-
-Una regresión simple de la variable dependiente contra la independiente principal + Controles + Efectos fijos.
-
-```{r}
-
-#Una regresión simple de la variable dependiente 
-#contra la independiente principal + Controles + Efectos fijos.
-
-modelo_d <- plm(prop ~ Corrupt + Auditada + GradoSecundaria + PartidoDesf 
-                + AlreadyAudited + CorruptPast + HOMI_CAP_MUN + log_total + MismoPartidoG, 
-                data = corruption_panel, 
-                model = "within", 
-                effect = "twoways")
-
-```
-
-### Tabla Resumen de Resultados
-```{r results='asis'}
-#Tabla de resumen de resultados
-
-stargazer(modelo_a, modelo_b, modelo_c, modelo_d,
-          type = "latex",
-          title = "Efecto de la Corrupción sobre la Proporción de Trampa Estudiantil",
-          column.labels = c("(1) Simple", "(2) Controles", "(3) EF", "(4) Completo"),
-          omit = c("Auditada", "GradoSecundaria", "PartidoDesf", 
-                   "AlreadyAudited", "CorruptPast", "HOMI_CAP_MUN", 
-                   "log_total", "MismoPartidoG", "Constant"),
-          covariate.labels = c("Corrupción"),
-          dep.var.labels = "Proporción de Trampa",
-          add.lines = list(
-            c("Controles", "No", "Sí", "No", "Sí"),
-            c("EF Colegio", "No", "No", "Sí", "Sí"),
-            c("EF Año", "No", "No", "Sí", "Sí")
-          ),
-          notes = c("Errores estándar en paréntesis.",
-                   "*** p<0.01, ** p<0.05, * p<0.1"),
-          notes.append = FALSE,
-          font.size = "scriptsize",  # Fuente más pequeña
-          column.sep.width = "1pt",  # Separación mínima
-          no.space = TRUE,
-          header = FALSE,
-          table.placement = "htbp",  # Cambiar de "H" a "htbp"
-          float = TRUE,
-          float.env = "table")
-
-```
-
-### Solución Tercer Punto
-
-
-**Respuesta:**
-
-- **Modelo_a (Simple):** 
-
-- **Modelo_b (Controles):**
-
-- **Modelo_c (Efectos Fijos):** 
-
-- **Modelo_d (Controles + Efectos Fijos):** 
+El instrumento es relevante dado que estadistico t es igual a 7.913, el cual es mayor a 1.96. De otro lado, el instrumento es fuerte con un estadistico F mayor a 10, en este caso es igual a 22.35.
 
 ## Cuarto Punto
 4.	En una tabla, presenten e interpreten los resultados de estimar por VI el efecto de (mayores) ingresos públicos (producto del petróleo) sobre el gasto público reportado en el año 2000 en Educación y Cultura, Salud y Sanitización, Transporte y Transferencias Sociales. 
