@@ -43,8 +43,6 @@ A continuaciòn, se definen los terminos de la ecuación (1):
 
 -  **u_{m1}** Es el término de error.
 
-- **$grade_{gmt}$:** Esta es una variable que representa el grado de los estudiantes (g) en el municipio (m) en el año (t). El nivel de agregación es grado, municipio y año.
-
 Manual avanzado de R markdown: https://rpubs.com/ricardo/14631 
 
 ## Segundo Punto
@@ -103,6 +101,7 @@ colnames(BD_0)
 ```
 ### Filtrar datos offshore
 ```{r}
+
 # Filtrar para municipios costeros sin petróleo onshore
 
 #5. Para este taller, corran la regresión únicamente para municipios costeros (coastal = 1) y que reciben petróleo únicamente del mar (onshore = 0).
@@ -112,7 +111,6 @@ BD_filtrada <- BD_0 %>%
          onshore == 0)
 
 print(paste("Observaciones después del filtro:", nrow(BD_filtrada)))
-
 ```
 
 ## Tercer Punto
@@ -129,8 +127,8 @@ y_{m,2000} = δ_3 + η_3Q_{m,2000} + X´_m ρ_3 + w_{m3} \quad
 \end{equation}
 
 
-
 ```{r}
+
 #Regresion del modelo simple.
 
 etapa_1 <- lm(mun_budget_revenue2000_pred_c ~ oilandgasvalue2000_cap + 
@@ -157,7 +155,6 @@ print(paste("t-estadístico:", round(t_stat, 3)))
 print(paste("F-estadístico:", round(f_stat, 3)))
 print(paste("¿Instrumento relevante? (t > 1.96):", abs(t_stat) > 1.96))
 print(paste("¿Instrumento fuerte? (F > 10):", f_stat > 10))
-
 ```
 
 El instrumento es relevante dado que estadistico t es igual a 7.913, el cual es mayor a 1.96. De otro lado, el instrumento es fuerte con un estadistico F mayor a 10, en este caso es igual a 22.35.
@@ -165,19 +162,80 @@ El instrumento es relevante dado que estadistico t es igual a 7.913, el cual es 
 ## Cuarto Punto
 4.	En una tabla, presenten e interpreten los resultados de estimar por VI el efecto de (mayores) ingresos públicos (producto del petróleo) sobre el gasto público reportado en el año 2000 en Educación y Cultura, Salud y Sanitización, Transporte y Transferencias Sociales. 
 
-a)¿Cuál es el supuesto de identificación para que esta especificación les permita hacer interpretaciones causales?
-
 ### Solución Cuarto Punto
 
+```{r}
+
+# Selección de variables.
+gasto <- c("pmun_exp_funct_educ_cult2000c",
+           "pmun_exp_funct_health_sanit2000c",
+           "pmun_exp_funct_transport2000c",
+           "pmun_exp_funct_welf2000c")
+
+# Función para estimar VI
+estimar_vi <- function(var_dep, BD_0) {
+  formula_str <- paste(var_dep, "~ mun_budget_revenue2000_pred_c + latitude1998 + longitude1998 + 
+                       dist_federal_capital1998 + dist_state_capital1998 + state_capital |
+                       oilandgasvalue2000_cap + latitude1998 + longitude1998 + 
+                       dist_federal_capital1998 + dist_state_capital1998 + state_capital")
+  
+  ivreg(as.formula(formula_str), data = BD_0)
+}
+
+# Estimaciones VI para gastos
+vi_educacion <- estimar_vi("pmun_exp_funct_educ_cult2000c", BD_filtrada)
+vi_salud <- estimar_vi("pmun_exp_funct_health_sanit2000c", BD_filtrada)
+vi_transporte <- estimar_vi("pmun_exp_funct_transport2000c", BD_filtrada)
+vi_transferencias <- estimar_vi("pmun_exp_funct_welf2000c", BD_filtrada)
+
+# Tabla de resultados gastos
+stargazer(vi_educacion, vi_salud, vi_transporte, vi_transferencias,
+          type = "text",
+          title = "Efectos VI en Gasto Público Reportado 2000",
+          column.labels = c("Educación", "Salud", "Transporte", "Transferencias"),
+          keep = "mun_budget_revenue2000_pred_c")
+
+```
+
+a)¿Cuál es el supuesto de identificación para que esta especificación les permita hacer interpretaciones causales?
 
 **Respuesta:**
 
 
 
 ## Quinto Punto
-En una tabla, presenten e interpreten los resultados de estimar por VI el efecto de (mayores) ingresos públicos (producto del petróleo) sobre las variables efectivas de bienestar. En particular, sobre proporción de personas que no viven en favelas en 2000 y  el número de salones por millón de habitantes en el 2005. ¿Qué indican sus resultados? ¿Mayores ingresos públicos resultan en niveles del bienestar medido a través de estas variables?. En texto describa los resultados para la primera variable
+En una tabla, presenten e interpreten los resultados de estimar por VI el efecto de (mayores) ingresos públicos (producto del petróleo) sobre las variables efectivas de bienestar. En particular, sobre proporción de personas que no viven en favelas en 2000 y  el número de salones por millón de habitantes en el 2005. En texto describa los resultados para la primera variable
 
 ### Solución Quinto Punto
 
+```{r}
 
+# VI para variables de bienestar
+vi_favelas <- estimar_vi("p_hhld_abovestrandard_ppl_2000", BD_filtrada)
+vi_salones <- estimar_vi("clroomsMunicipal_pop2005", BD_filtrada)
+
+# Tabla de resultados bienestar
+stargazer(vi_favelas, vi_salones,
+          type = "text", 
+          title = "Efectos VI en Variables de Bienestar",
+          column.labels = c("% No en Favelas 2000", "Salones por Millón 2005"),
+          keep = "mun_budget_revenue2000_pred_c")
+
+# Interpretación específica para favelas (primera variable)
+coef_favelas <- coef(vi_favelas)["mun_budget_revenue2000_pred_c"]
+se_favelas <- summary(vi_favelas)$coefficients["mun_budget_revenue2000_pred_c", "Std. Error"]
+
+cat("\nInterpretación para proporción que no vive en favelas:\n")
+cat(sprintf("Un millón de reales adicionales en ingresos municipales está asociado con un cambio de %.4f puntos porcentuales en la proporción de personas que no viven en condiciones por debajo del estándar.\n", 
+            coef_favelas * 1000000))
+cat(sprintf("Error estándar: %.4f\n", se_favelas * 1000000))
+cat(sprintf("¿Estadísticamente significativo? %s\n", 
+            ifelse(abs(coef_favelas/se_favelas) > 1.96, "Sí", "No")))
+
+```
+
+a) ¿Qué indican sus resultados?
+**Respuesta:**
+
+b) ¿Mayores ingresos públicos resultan en niveles del bienestar medido a través de estas variables?
 **Respuesta:**
