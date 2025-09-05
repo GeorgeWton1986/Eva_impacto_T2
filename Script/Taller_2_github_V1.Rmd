@@ -53,17 +53,30 @@ Manual avanzado de R markdown: https://rpubs.com/ricardo/14631
 
 a) ¿Cuál es la intuición detrás de implementar Variables Instrumentales (VI) en vez de Mínimos Cuadrados Ordinarios (MCO)?
 
-**Respuesta:**El método de la variable instrumental (VI) permite estimar el impacto de una variable o el efecto causal sobre el resultado estudiado. En aucencia de un experimiento aleatorio, se puede correr el riesgo de endogeneidad lo que causaria en los estimadores por MCO incosistencias y sesgos. En consecuencia, la implementacion del método de VI deberá encontrar una variables adicional que logre explicar el resultado a través de la variable explicativa de interés que en este caso será $r_{m}$.
+**Respuesta:**El método de la variable instrumental (VI) permite estimar el impacto de una variable o el efecto causal sobre el resultado estudiado. En aucencia de un experimiento aleatorio, se puede correr el riesgo de endogeneidad lo que causaria en los estimadores por MCO incosistencias y sesgos. En consecuencia, la implementacion del método de VI deberá encontrar una variables adicional (Instrumento) que logre explicar el resultado $W_{m}$ a través de la variable explicativa de interés que en este caso será $r_{m}$.
 
 b)Mencione al menos un sesgo del cual podríamos estar preocupados si interpretamos los efectos por MCO de manera causal.
 
 **Respuesta:**
-Los ingresos municipales en general pueden tener diferentes fuentes de recursos, como por ejemplo, impuestos locales, servicios públicos, transferencias desde los gobiernos estatales y municipales, entre otros. Además, los ingresos podrán depender de diferentes caracteristicas locales, tales como, probreza monetaria, multidimencional, demografía, infraestructura, ect. Por lo tanto, es necesario estudiar las variables observadas que permitan establecer el efecto causal de $r_{m}$ sobre $W_{m}$. En este sentido, es necesario considerar un sesgo por variable omitida, dado que existen variables no observadas que influyen en los indicadores de $W_{m}$.
+Los ingresos municipales en general pueden tener diferentes fuentes de recursos, como por ejemplo, impuestos locales, servicios públicos, transferencias desde los gobiernos estatales y municipales, entre otros. Además, los ingresos podrán depender de diferentes caracteristicas locales, tales como, probreza monetaria, multidimencional, demografía, infraestructura, ect. Por lo tanto, es necesario estudiar las variables observadas que permitan establecer el efecto causal de $r_{m}$ sobre $W_{m}$. A continuacion, se explicará los diferentes tipos de sesgos en el contexto del problema, así,
 
+ - **Sesgo por variable omitida**, dado que existen variables no observadas que influyen en los indicadores de $W_{m}$ que impiden estimar el efecto de $r_{m}$ sobre el resultado $W_{m}$.
+ 
+ - **Sesgo por doble causalidad**, en este caso, los indicadores contenidos en la variables resultado $W_{m}$ pueden causar que los ingresos municipales $r_{m}$ cambien, dado que mejores o peores indicadores de resultados prioriza o no, el aumento de nuevos recursos municipales para las AMCs.
+ 
+ - **Sesgo de selección**, dado que las AMCs con mayores ingresos municipales $r_{m}$ debido a la producción de petroleo onshore pueden diferir sistemáticamente de las AMCs con menores ingresos municipales en términos de características observables y no observables que también afectan los indicadores de resultados $W_{m}$.
 
 c) ¿Cuáles son los supuestos necesarios para que VI nos permita recuperar el efecto causal de interés? ¿Son creíbles los supuestos?
 
-**Respuesta:** Los supuesto necesarios para que un Instrumento tenga valides son: Relevancia, Exclusión e Independicia. Para el articulo que estamos analizando, se plantea el supuesto de relevancia desde el Instrumento $Q_{m}$, que esta en la capacidad de predecir $r_{m}$. De otro lado, el supuesto de exclusión plantea que el instrumento $Q_{m}$ no debe tener un efecto directo sobre $W_{m}$, es decir, el instrumento solo afecta a la variable explicativa de interés $r_{m}$. Finalmente, el supuesto de independencia plantea que el instrumento $Q_{m}$ debe ser independiente del término de error en la ecuación estructural. En este sentido, se puede considerar que los supuestos planteados para el instrumento $Q_{m}$ tales como, la operación de petrobras, ubicación de la plataformas petroleras, entre otros son aleatorios. Además, la actividad petrolera en Brasil tiene poco efecto en las actividades no petroleras (Los efectos de derrame - Spillover) permiten establacer que los supuesto del instrumento son creíbles.
+**Respuesta:** Los supuesto necesarios para que un Instrumento tenga valides son: Relevancia, Exclusión e Independicia. Para el articulo que estamos analizando, se plantea:
+
+- El supuesto de **relevancia** desde el Instrumento $Q_{m}$, que esta en la capacidad de predecir $r_{m}$. Se expresa así: $E[Q_{m},r_{m}]\neq0$
+
+- El supuesto de **exclusión** plantea que el instrumento $Q_{m}$ no debe tener un efecto directo sobre $W_{m}$, es decir, el instrumento solo afecta a la variable explicativa de interés $r_{m}$. Se expresa así: $E[Q_{m},W_{m}|r_{m},X'_{m}]=0$
+
+- El supuesto de **independencia** describe que el instrumento $Q_{m}$ debe ser independiente del término de error en la ecuación estructural. Se expresa así: $E[Q_{m},u_{m}]=0$
+
+Por lo tanto, se puede considerar que los supuestos planteados para el instrumento $Q_{m}$ tales como, la operación de petrobras, ubicación de la plataformas petroleras, entre otros son aleatorios. Además, la actividad petrolera en Brasil tiene poco efecto en las actividades no petroleras (Los efectos de derrame - Spillover) permiten establacer que los supuesto del instrumento son creíbles.
 
 ### Generalidades de R
 ```{r}
