@@ -37,7 +37,7 @@ A continuaciòn, se definen los terminos de la ecuación (1):
   - **$longitude_{1998}$:** Coordenadas geográficas que ayudan a controlar por diferencias regionales.
   - **$distfederalcapital_{1998}$:** Distancia a la capital federal.
   - **$diststatecapital_{1998}$:** Distancia a la capital estatal.
-  - **statecapital**: Un dummy que indica si la AMC es una capital estatal.
+  - **$statecapital$**: Un dummy que indica si la AMC es una capital estatal.
 
 -  **$\delta_1, \theta_1, \rho_1$:** Son los coeficientes a estimar.
 
