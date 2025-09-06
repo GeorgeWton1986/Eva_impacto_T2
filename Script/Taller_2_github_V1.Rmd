@@ -3,8 +3,8 @@ title: "EVALUACIÓN DE IMPACTO - TALLER 2"
 author: "VIÁFARA MORALES, JORGE ELIECER"
 date: "2025-09-06"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
   word_document: default
 ---
 
@@ -20,7 +20,7 @@ Escriban la especificación principal de los autores (en niveles) y describan ca
 De acuerdo con el enunciado la especificación principal del autor puede escribirse de la siguiente manera:
 
 \begin{align}
-W_{m} = \delta_1 &+ \theta_1 r_{m} + \X'_{m}\rho_1+ u_{m1} \quad \nonumber \\
+W_{m} = \delta_1 &+ \theta_1 r_{m} + X'_{m}\rho_1+ u_{m1} \quad \nonumber \\
 \end{align}
 
 Nota: la nomenclatura utilizada en la ecución (1) sigue la convención de subíndices para indicar el nivel de agregación de las variables.
@@ -29,19 +29,19 @@ A continuaciòn, se definen los terminos de la ecuación (1):
 
 -   **$W_{m}$:** Representa una variable de resultado de la $AMC_m$. Esto incluye una variedad de indicadores como el gasto reportado en diversas partidas del presupuesto municipal, la provisión real de bienes y servicios públicos, las transferencias sociales, el ingreso de los hogares y las tasas de pobreza, entre otros.
 
--  **$r_{m} (mun_budget_revenue2000_pred_c)$:** Es una medida a nivel de la  $AMC_m$ de los ingresos municipales per cápita.
+-  **$r_{m} (munbudgetrevenue2000predc)$:** Es una medida a nivel de la  $AMC_m$ de los ingresos municipales per cápita.
 
 -  **$X'_{m}$:** Es un vector de controles geográficos a nivel de la $AMC_m$. Estos controles incluyen la latitud, la longitud, un indicador de si la AMC está en la costa, las distancias a las capitales federal y estatal, un dummy de capital estatal y efectos fijos de estado. La inclusión de estos controles geográficos es crucial porque las AMCs ricas en petróleo y las pobres en petróleo pueden diferir en características geográficas sistemáticas. El objetivo es asegurar que la abundancia de petróleo sea tan buena como asignada aleatoriamente, condicional a estas covariables geográficas.
 
-  - **$latitude1998$:** Coordenadas geográficas que ayudan a controlar por diferencias regionales.
-  - **$longitude1998$:** Coordenadas geográficas que ayudan a controlar por diferencias regionales.
-  - **$dist_federal_capital1998$:** Distancia a la capital federal.
-  - **$dist_state_capital1998$:** Distancia a la capital estatal.
-  - **state_capital**: Un dummy que indica si la AMC es una capital estatal.
+  - **$latitude_{1998}$:** Coordenadas geográficas que ayudan a controlar por diferencias regionales.
+  - **$longitude_{1998}$:** Coordenadas geográficas que ayudan a controlar por diferencias regionales.
+  - **$distfederalcapital_{1998}$:** Distancia a la capital federal.
+  - **$diststatecapital_{1998}$:** Distancia a la capital estatal.
+  - **statecapital**: Un dummy que indica si la AMC es una capital estatal.
 
--  **$\delta_1, \theta_1, rho_1 $:** Son los coeficientes a estimar.
+-  **$\delta_1, \theta_1, \rho_1$:** Son los coeficientes a estimar.
 
--  **u_{m1}** Es el término de error.
+-  **$u_{m1}$** Es el término de error.
 
 Manual avanzado de R markdown: https://rpubs.com/ricardo/14631 
 
@@ -136,7 +136,7 @@ En una tabla, presenten los resultados de estimar la primera etapa de la metodol
 La ecuación de la primera etapa se expresa el término $r_{m}$ como funcion de $Q_{m}$ y $X'_{m}$, es decir:
 
 \begin{equation}
-r_{m,2000} = δ_3 + η_3Q_{m,2000} + X´_m ρ_3 + w_{m3} \quad
+r_{m,2000} = \delta_3 + η_3Q_{m,2000} + X´_m \rho_3 + w_{m3} \quad
 \end{equation}
 
 
