@@ -58,13 +58,13 @@ a) ¿Cuál es la intuición detrás de implementar Variables Instrumentales (VI)
 b)Mencione al menos un sesgo del cual podríamos estar preocupados si interpretamos los efectos por MCO de manera causal.
 
 **Respuesta:**
-Los ingresos municipales en general pueden tener diferentes fuentes de recursos, como por ejemplo, impuestos locales, servicios públicos, transferencias desde los gobiernos estatales y municipales, entre otros. Además, los ingresos podrán depender de diferentes caracteristicas locales, tales como, probreza monetaria, multidimencional, demografía, infraestructura, ect. Por lo tanto, es necesario estudiar las variables observadas que permitan establecer el efecto causal de $r_{m}$ sobre $W_{m}$. A continuacion, se explicará los diferentes tipos de sesgos en el contexto del problema, así,
+Los ingresos municipales en general pueden tener diferentes fuentes de recursos, como por ejemplo, impuestos locales, servicios públicos, transferencias desde los gobiernos estatales y municipales, entre otros. Además, los ingresos podrán depender de diferentes caracteristicas locales, tales como, probreza monetaria o multidimencional, demografía, infraestructura, ect. Por lo tanto, es necesario estudiar las variables observadas que permitan establecer el efecto causal de $r_{m}$ sobre $W_{m}$. A continuacion, se explicará los diferentes tipos de sesgos en el contexto del problema, así,
 
- - **Sesgo por variable omitida**, dado que existen variables no observadas que influyen en los indicadores de $W_{m}$ que impiden estimar el efecto de $r_{m}$ sobre el resultado $W_{m}$.
+ - **Sesgo por variable omitida**, dado que existen variables no observadas que influyen en los indicadores de $W_{m}$ que impiden estimar el efecto directo de $r_{m}$ sobre el resultado $W_{m}$.
  
  - **Sesgo por doble causalidad**, en este caso, los indicadores contenidos en la variables resultado $W_{m}$ pueden causar que los ingresos municipales $r_{m}$ cambien, dado que mejores o peores indicadores de resultados prioriza o no, el aumento de nuevos recursos municipales para las AMCs.
  
- - **Sesgo de selección**, dado que las AMCs con mayores ingresos municipales $r_{m}$ debido a la producción de petroleo onshore pueden diferir sistemáticamente de las AMCs con menores ingresos municipales en términos de características observables y no observables que también afectan los indicadores de resultados $W_{m}$.
+ - **Sesgo de selección**,las AMCs con mayores ingresos municipales $r_{m}$ a causa de la producción de petróleo onshore, difieren de aquellas AMCs que no cuentan con esta fuente de ingresos. Por lo tanto, se pueden presentar mejores indicadores de resultados $W_{m}$ mejores instalaciones eductivas, mejores servicios de salud, mayor industrialización, etc.
 
 c) ¿Cuáles son los supuestos necesarios para que VI nos permita recuperar el efecto causal de interés? ¿Son creíbles los supuestos?
 
@@ -136,7 +136,7 @@ En una tabla, presenten los resultados de estimar la primera etapa de la metodol
 La ecuación de la primera etapa se expresa el término $r_{m}$ como funcion de $Q_{m}$ y $X'_{m}$, es decir:
 
 \begin{equation}
-y_{m,2000} = δ_3 + η_3Q_{m,2000} + X´_m ρ_3 + w_{m3} \quad
+r_{m,2000} = δ_3 + η_3Q_{m,2000} + X´_m ρ_3 + w_{m3} \quad
 \end{equation}
 
 
@@ -192,7 +192,7 @@ estimar_vi <- function(var_dep, BD_0) {
                        oilandgasvalue2000_cap + latitude1998 + longitude1998 + 
                        dist_federal_capital1998 + dist_state_capital1998 + state_capital")
   
-  ivreg(as.formula(formula_str), data = BD_0)
+  ivreg(as.formula(formula_str), data = BD_0) # Estimación por VI
 }
 
 # Estimaciones VI para gastos
@@ -210,11 +210,13 @@ stargazer(vi_educacion, vi_salud, vi_transporte, vi_transferencias,
 
 ```
 
+Nota: **oilandgasvalue2000_cap** corresponde a $Q_{m}$, producción petrolera per cápita en 2000. 
+
 a)¿Cuál es el supuesto de identificación para que esta especificación les permita hacer interpretaciones causales?
 
-**Respuesta:**
+**Respuesta:** Los resultados obtenidos sobre cada variable de gasto público mencionada para el año 2000. Se puede explicar de la siguiente manera: El gasto de educación aumenta en 11 centavos de real por cada real adicional que ingresa a la AMCs. El gasto en salud y transporte aunmentan 13 centavos por cada real adicional. El gasto en transferencias sociales aumenta en 6 centavos por cada real adicional. Por último, la significancia estadistica indique que los resultados son robustos para variable de gasto público analizada. 
 
-
+El supuesto de identificación (Exclusión) presenta que la producción petrolera (instrumento) debe afectar el gasto público ÚNICAMENTE a través de los ingresos municipales, sin tener efectos directos sobre las decisiones de gasto. En otras palabras, el petróleo no puede influir directamente en cómo los gobiernos locales asignan sus recursos, solo indirectamente al proporcionarles más recursos disponibles.
 
 ## Quinto Punto
 En una tabla, presenten e interpreten los resultados de estimar por VI el efecto de (mayores) ingresos públicos (producto del petróleo) sobre las variables efectivas de bienestar. En particular, sobre proporción de personas que no viven en favelas en 2000 y  el número de salones por millón de habitantes en el 2005. En texto describa los resultados para la primera variable
@@ -238,17 +240,17 @@ stargazer(vi_favelas, vi_salones,
 coef_favelas <- coef(vi_favelas)["mun_budget_revenue2000_pred_c"]
 se_favelas <- summary(vi_favelas)$coefficients["mun_budget_revenue2000_pred_c", "Std. Error"]
 
-cat("\nInterpretación para proporción que no vive en favelas:\n")
-cat(sprintf("Un millón de reales adicionales en ingresos municipales está asociado con un cambio de %.4f puntos porcentuales en la proporción de personas que no viven en condiciones por debajo del estándar.\n", 
-            coef_favelas * 1000000))
-cat(sprintf("Error estándar: %.4f\n", se_favelas * 1000000))
-cat(sprintf("¿Estadísticamente significativo? %s\n", 
-            ifelse(abs(coef_favelas/se_favelas) > 1.96, "Sí", "No")))
+# cat("\nInterpretación para proporción que no vive en favelas:\n")
+# cat(sprintf("Un millón de reales adicionales en ingresos municipales está asociado con un cambio de %.4f puntos porcentuales en la proporción de personas que no viven en condiciones por debajo del estándar.\n", 
+#             coef_favelas * 1000000))
+# cat(sprintf("Error estándar: %.4f\n", se_favelas * 1000000))
+# cat(sprintf("¿Estadísticamente significativo? %s\n", 
+#             ifelse(abs(coef_favelas/se_favelas) > 1.96, "Sí", "No")))
 
 ```
 
 a) ¿Qué indican sus resultados?
-**Respuesta:**
+**Respuesta:**Los resultados sugieren que un aumento en las ganancias de los municipios costeros por la explotación de petroleo costa afuera (offshore) tiene un efecto significativo sobre la personas que no viven en favelas. De manera cuantitativa, un aumento de cien mil de reales por cuenta de fuentes de ingresos petroleros disminuyen en 0.14 puntos porcentuales. Por otro lado, el efecto sobre los Salones por millón de estudiales es nulo. La intuición económica de esto fenomenos, puede estar determinada por el cambio en el nivel de vida una vez se desplazan para encontrar nuevas oportunidades laborales por la creacion de nuevos empleos en una economica que se dinamiza gracias a la actividad petrolera. Por el contrario, la infraestructura educativa representada en Salones, no esta priorizada por el gobierno local, porque puede considerar que este gasto no es apreciable para la población y por el contrario generaria una migración de familias hacia las AMCs petroleras. En conclusión, los resultados sobre el bienestar son mínimos.
 
 b) ¿Mayores ingresos públicos resultan en niveles del bienestar medido a través de estas variables?
-**Respuesta:**
+**Respuesta:** Los mayores ingresos públicos NO resultan en mejoras proporcionales del bienestar. Los resultados evidencian una desconexión preocupante: mientras el gasto público reportado aumenta sustancialmente (6-13 centavos por real adicional), las mejoras en bienestar efectivo son mínimas o inexistentes. Esto sugiere el fenómeno de 'dinero perdido' que documentan los autores, donde los recursos petroleros no se traducen en beneficios tangibles para la población, posiblemente debido a corrupción, patronazgo político o grave ineficiencia en la gestión pública municipal.
